@@ -22,10 +22,12 @@ class ControllerBase
       raise
     else
       @already_built_response = true
-      res.set_header('location', "#{url}")
+      res.set_header('location', url.to_s)
       res.status = 302
     end
+    nil
   end
+
 
   # Populate the response with content.
   # Set the response's content type to the given type.
@@ -37,12 +39,21 @@ class ControllerBase
       @already_built_response = true
       res.body = [content]
       res["Content-Type"] = "#{content_type}"
+      nil
     end
   end
 
   # use ERB and binding to evaluate templates
   # pass the rendered html to render_content
   def render(template_name)
+    contents = file_contents(template_name)
+    b = binding
+    rendered_contents = ERB.new(contents).result(b)
+    render_content(rendered_contents, "text/html")
+  end
+
+  def file_contents(name)
+    file_contents = File.read("views/#{self.class.name.underscore}/#{name.to_s}.html.erb")
   end
 
   # method exposing a `Session` object
